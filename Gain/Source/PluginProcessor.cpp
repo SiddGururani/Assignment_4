@@ -11,14 +11,21 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+using namespace std;
 
 //==============================================================================
 NewProjectAudioProcessor::NewProjectAudioProcessor()
 {
+    _vibrato = 0;
+    _mod_frequency = new AudioParameterFloat("mod freq","Modulation Frequency", 0.F, 15.F, 10.F);
+    addParameter(_mod_frequency);
+    _mod_amplitude = new AudioParameterFloat("mod amp","Modulation Amplitude", 0.F, 0.1F, 0.01F);
+    addParameter(_mod_amplitude);
 }
 
 NewProjectAudioProcessor::~NewProjectAudioProcessor()
 {
+    CVibrato::destroyInstance(_vibrato);
 }
 
 //==============================================================================
@@ -79,6 +86,25 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    const int totalNumInputChannels  = getTotalNumInputChannels();
+    const int totalNumOutputChannels = getTotalNumOutputChannels();
+    int num_channels = max(totalNumOutputChannels, totalNumInputChannels);
+    
+    _error_check = CVibrato::createInstance(_vibrato);
+    if (_error_check == kUnknownError)
+    {
+        cerr << "Runtime error. Memory issues." << endl;
+    }
+    
+    _error_check = _vibrato->initInstance(0.1 ,sampleRate, num_channels);
+    if (_error_check == kFunctionInvalidArgsError)
+    {
+        cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
+    }
+    
+    //initialize with default parameters
+    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, getParameterDefaultValue(0));
+    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, getParameterDefaultValue(1));
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -89,30 +115,13 @@ void NewProjectAudioProcessor::releaseResources()
 
 void NewProjectAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
+    float** writePointer = buffer.getArrayOfWritePointers();
+    _vibrato->process(writePointer, writePointer, buffer.getNumSamples());
+}
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        float* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-		for (int i = 0; i < buffer.getNumSamples(); i++)
-		{
-			channelData[i] *= 0.5;
-		}
-    }
+void NewProjectAudioProcessor::processBlockBypassed (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+{
+    
 }
 
 //==============================================================================
@@ -139,6 +148,19 @@ void NewProjectAudioProcessor::setStateInformation (const void* data, int sizeIn
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+void NewProjectAudioProcessor::setParameter(int parameterIndex, float newValue)
+{
+    if (parameterIndex == 0)
+    {
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, newValue);
+    }
+    else if (parameterIndex == 1)
+    {
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, newValue);
+    }
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

@@ -13,6 +13,8 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+#include "Vibrato.h"
+#include "ErrorDef.h"
 
 //==============================================================================
 /**
@@ -29,6 +31,7 @@ public:
     void releaseResources() override;
 
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlockBypassed (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
@@ -51,8 +54,16 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    //==============================================================================
+    void setParameter (int parameterIndex, float newValue) override;
 
 private:
+    CVibrato* _vibrato;
+    Error_t _error_check;
+    AudioParameterFloat* _mod_frequency;
+    AudioParameterFloat* _mod_amplitude;
+ 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)
 };
