@@ -57,6 +57,7 @@ public:
     
     //==============================================================================
     void setParameter (int parameterIndex, float newValue) override;
+    float getParameter(int parameterIndex) override;
 
 private:
     CVibrato* _vibrato;

@@ -18,17 +18,22 @@
 //==============================================================================
 /**
 */
-class NewProjectAudioProcessorEditor  : public AudioProcessorEditor
+class NewProjectAudioProcessorEditor  : public AudioProcessorEditor, public ButtonListener, public SliderListener
 {
 public:
     NewProjectAudioProcessorEditor (NewProjectAudioProcessor&);
     ~NewProjectAudioProcessorEditor();
 
+    Slider _slider_mod_freq;
+    Slider _slider_mod_amp;
+    TextButton _toggle_button;
+
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-	Slider *slider;
-
+    void buttonClicked(Button* button) override;
+    void sliderValueChanged(Slider* slider) override;
+    
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.

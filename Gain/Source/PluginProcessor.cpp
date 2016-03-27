@@ -11,15 +11,22 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#define MIN_MOD_AMP 0.0
+#define MAX_MOD_AMP 0.1
+#define DEFAULT_MOD_AMP 0.01
+#define MIN_MOD_FREQ 0.0
+#define MAX_MOD_FREQ 20.0
+#define DEFAULT_MOD_FREQ 10
+
 using namespace std;
 
 //==============================================================================
 NewProjectAudioProcessor::NewProjectAudioProcessor()
 {
     _vibrato = 0;
-    _mod_frequency = new AudioParameterFloat("mod freq","Modulation Frequency", 0.F, 15.F, 10.F);
+    _mod_frequency = new AudioParameterFloat("mod freq","Modulation Frequency", MIN_MOD_FREQ, MAX_MOD_FREQ, DEFAULT_MOD_FREQ);
     addParameter(_mod_frequency);
-    _mod_amplitude = new AudioParameterFloat("mod amp","Modulation Amplitude", 0.F, 0.1F, 0.01F);
+    _mod_amplitude = new AudioParameterFloat("mod amp","Modulation Amplitude", MIN_MOD_AMP, MAX_MOD_AMP, DEFAULT_MOD_AMP);
     addParameter(_mod_amplitude);
 }
 
@@ -96,15 +103,21 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         cerr << "Runtime error. Memory issues." << endl;
     }
     
-    _error_check = _vibrato->initInstance(0.1 ,sampleRate, num_channels);
+    _error_check = _vibrato->initInstance(MAX_MOD_AMP ,sampleRate, num_channels);
     if (_error_check == kFunctionInvalidArgsError)
     {
         cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
     }
     
     //initialize with default parameters
-    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, getParameterDefaultValue(0));
-    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, getParameterDefaultValue(1));
+    setParameter(0, getParameterDefaultValue(0));
+    setParameter(1, getParameterDefaultValue(1));
+    //_vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, getParameterDefaultValue(0));
+    //_vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, getParameterDefaultValue(1));
+    
+    //std::cout << getParameter(0) << std::endl;
+    //std::cout << getParameter(1) << std::endl;
+    
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -149,15 +162,43 @@ void NewProjectAudioProcessor::setStateInformation (const void* data, int sizeIn
     // whose contents will have been created by the getStateInformation() call.
 }
 
-void NewProjectAudioProcessor::setParameter(int parameterIndex, float newValue)
+void NewProjectAudioProcessor::setParameter(int parameter_index, float new_value)
 {
-    if (parameterIndex == 0)
+    if (parameter_index == 0)
     {
-        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, newValue);
+        float norm_new_value = new_value * (MAX_MOD_FREQ - MIN_MOD_FREQ) + MIN_MOD_FREQ;
+        std::cout << norm_new_value << std::endl;
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, norm_new_value);
     }
-    else if (parameterIndex == 1)
+    else if (parameter_index == 1)
     {
-        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, newValue);
+        float norm_new_value = new_value * (MAX_MOD_AMP - MIN_MOD_AMP) + MIN_MOD_AMP;
+        std::cout << norm_new_value << std::endl;
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, norm_new_value);
+    }
+    else
+    {
+        jassert("Invalid parameter index");
+    }
+}
+
+float NewProjectAudioProcessor::getParameter(int parameter_index)
+{
+    if (parameter_index == 0)
+    {
+        float value = _vibrato->getParam(CVibrato::VibratoParam_t::kParamModFreqInHz);
+        value = (value - MIN_MOD_FREQ) / (MAX_MOD_FREQ - MIN_MOD_FREQ);
+        return value;
+    }
+    else if (parameter_index == 1)
+    {
+        float value = _vibrato->getParam(CVibrato::VibratoParam_t::kParamModWidthInS);
+        value = (value - MIN_MOD_AMP) / (MAX_MOD_AMP - MIN_MOD_AMP);
+        return value;
+    }
+    else
+    {
+        jassert("Invalid Parameter Index");
     }
 }
 
