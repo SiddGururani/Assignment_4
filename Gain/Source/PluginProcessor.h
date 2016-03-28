@@ -56,14 +56,29 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     //==============================================================================
-    void setParameter (int parameterIndex, float newValue) override;
-    float getParameter(int parameterIndex) override;
+    void setParameter (int parameter_index, float new_value) override;
+    float getParameter(int parameter_index) override;
+    
+    
+    //==============================================================================
+    bool getBypassedState();
+    void setBypassedState(bool state);
 
 private:
     CVibrato* _vibrato;
     Error_t _error_check;
     AudioParameterFloat* _mod_frequency;
     AudioParameterFloat* _mod_amplitude;
+    bool _is_bypassed;
+    bool _param_updated;
+    float _temp_mod_freq;
+    float _temp_mod_amp;
+    
+    void setParameters();
+    void setParametersBypassed();
+    //bool getParamUpdateState();
+    //void setParamUpdateState(bool state);
+    
  
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)

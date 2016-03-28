@@ -16,7 +16,7 @@
 #define DEFAULT_MOD_AMP 0.01
 #define MIN_MOD_FREQ 0.0
 #define MAX_MOD_FREQ 20.0
-#define DEFAULT_MOD_FREQ 10
+#define DEFAULT_MOD_FREQ 2.0
 
 using namespace std;
 
@@ -24,6 +24,8 @@ using namespace std;
 NewProjectAudioProcessor::NewProjectAudioProcessor()
 {
     _vibrato = 0;
+    _is_bypassed = false;
+    _param_updated = false;
     _mod_frequency = new AudioParameterFloat("mod freq","Modulation Frequency", MIN_MOD_FREQ, MAX_MOD_FREQ, DEFAULT_MOD_FREQ);
     addParameter(_mod_frequency);
     _mod_amplitude = new AudioParameterFloat("mod amp","Modulation Amplitude", MIN_MOD_AMP, MAX_MOD_AMP, DEFAULT_MOD_AMP);
@@ -112,11 +114,7 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     //initialize with default parameters
     setParameter(0, getParameterDefaultValue(0));
     setParameter(1, getParameterDefaultValue(1));
-    //_vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, getParameterDefaultValue(0));
-    //_vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, getParameterDefaultValue(1));
-    
-    //std::cout << getParameter(0) << std::endl;
-    //std::cout << getParameter(1) << std::endl;
+    setParameters();
     
 }
 
@@ -128,13 +126,27 @@ void NewProjectAudioProcessor::releaseResources()
 
 void NewProjectAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    float** writePointer = buffer.getArrayOfWritePointers();
-    _vibrato->process(writePointer, writePointer, buffer.getNumSamples());
+    if (_is_bypassed)
+    {
+        processBlockBypassed(buffer, midiMessages);
+        return;
+    }
+    else
+    {
+        if (_param_updated)
+        {
+            setParameters();
+        }
+        float** write_pointer = buffer.getArrayOfWritePointers();
+        _vibrato->process(write_pointer, write_pointer, buffer.getNumSamples());
+    }
 }
 
 void NewProjectAudioProcessor::processBlockBypassed (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    
+    setParametersBypassed();
+    float** write_pointer = buffer.getArrayOfWritePointers();
+    _vibrato->process(write_pointer, write_pointer, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -166,15 +178,13 @@ void NewProjectAudioProcessor::setParameter(int parameter_index, float new_value
 {
     if (parameter_index == 0)
     {
-        float norm_new_value = new_value * (MAX_MOD_FREQ - MIN_MOD_FREQ) + MIN_MOD_FREQ;
-        std::cout << norm_new_value << std::endl;
-        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, norm_new_value);
+        _temp_mod_freq = new_value * (MAX_MOD_FREQ - MIN_MOD_FREQ) + MIN_MOD_FREQ;
+        _param_updated = true;
     }
     else if (parameter_index == 1)
     {
-        float norm_new_value = new_value * (MAX_MOD_AMP - MIN_MOD_AMP) + MIN_MOD_AMP;
-        std::cout << norm_new_value << std::endl;
-        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, norm_new_value);
+        _temp_mod_amp = new_value * (MAX_MOD_AMP - MIN_MOD_AMP) + MIN_MOD_AMP;
+        _param_updated = true;
     }
     else
     {
@@ -202,6 +212,46 @@ float NewProjectAudioProcessor::getParameter(int parameter_index)
     }
 }
 
+bool NewProjectAudioProcessor::getBypassedState()
+{
+    return _is_bypassed;
+}
+
+void NewProjectAudioProcessor::setBypassedState(bool state)
+{
+    _is_bypassed = state;
+}
+
+/*
+bool NewProjectAudioProcessor::getParamUpdateState()
+{
+    return _param_updated;
+}
+
+void NewProjectAudioProcessor::setParamUpdateState(bool state)
+{
+    _param_updated = state;
+}
+*/
+void NewProjectAudioProcessor::setParameters()
+{
+    if (_param_updated)
+    {
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, _temp_mod_freq);
+        _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, _temp_mod_amp);
+        _param_updated = false;
+    }
+    else
+    {
+        return;
+    }
+}
+
+void NewProjectAudioProcessor::setParametersBypassed()
+{
+    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModFreqInHz, 0);
+    _vibrato->setParam(CVibrato::VibratoParam_t::kParamModWidthInS, 0);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

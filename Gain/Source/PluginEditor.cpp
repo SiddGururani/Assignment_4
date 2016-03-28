@@ -23,6 +23,10 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     // set slider properties
 	_slider_mod_freq.setSliderStyle(Slider::LinearBarVertical);
 	_slider_mod_freq.setRange(0, 1);
+    
+    std::cout << processor.getParameter(0) << std::endl;
+    std::cout << processor.getParameter(0) << std::endl;
+    
     _slider_mod_freq.setValue(processor.getParameter(0));
     addAndMakeVisible(_slider_mod_freq);
     _slider_mod_freq.addListener(this);
@@ -61,14 +65,26 @@ void NewProjectAudioProcessorEditor::resized()
     // subcomponents in your editor..
     _slider_mod_freq.setBounds(getWidth() / 2 - 85, 50, 40, 150);
     _slider_mod_amp.setBounds(getWidth()/2 + 56, 50, 40, 150);
-    _toggle_button.setBounds(getWidth() / 2 - 25, 260, 50, 20);
+    _toggle_button.setBounds(getWidth() / 2 - 30, 260, 60, 20);
 }
 
 void NewProjectAudioProcessorEditor::buttonClicked(juce::Button *button)
 {
     if (button == &_toggle_button)
     {
-        
+        bool cur_state = processor.getBypassedState();
+        if (cur_state)
+        {
+            _toggle_button.setButtonText("Bypass");
+            _toggle_button.setColour (TextButton::buttonColourId, Colours::lightgreen);
+        }
+        else
+        {
+            _toggle_button.setButtonText("Bypassed");
+            _toggle_button.setColour (TextButton::buttonColourId, Colours::lightgrey);
+        }
+        bool next_state = !cur_state;
+        processor.setBypassedState(next_state);
     }
 }
 
