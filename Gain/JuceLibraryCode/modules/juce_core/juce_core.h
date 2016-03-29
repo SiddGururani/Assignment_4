@@ -2,7 +2,7 @@
 // module headers to the correct external folder.
 
 #if defined (JUCER_VS2015_78A5022)
- #include "../../../../../Academics/Audio Software Engg/JUCE/modules/juce_core/juce_core.h"
+ #include "../../../../../../Academics/Audio Software Engg/JUCE/modules/juce_core/juce_core.h"
 #elif defined (JUCER_XCODE_MAC_F6D2F4CF)
  #include "../../../../../JUCE/modules/juce_core/juce_core.h"
 #else

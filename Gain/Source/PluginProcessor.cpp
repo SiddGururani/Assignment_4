@@ -45,20 +45,12 @@ const String NewProjectAudioProcessor::getName() const
 
 bool NewProjectAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
+	return false;
 }
 
 bool NewProjectAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
+	return false;
 }
 
 double NewProjectAudioProcessor::getTailLengthSeconds() const

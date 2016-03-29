@@ -10,7 +10,7 @@
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     <key>CFBundleName</key>
-    <string>Gain</string>
+    <string>VibratoOoOo</string>
     <key>CFBundlePackageType</key>
     <string>TDMw</string>
     <key>CFBundleSignature</key>
@@ -27,9 +27,9 @@
     <array>
       <dict>
         <key>name</key>
-        <string>yourcompany: NewProject</string>
+        <string>yourcompany: VibratoOoOo</string>
         <key>description</key>
-        <string>NewProject</string>
+        <string>VibratoOoOo</string>
         <key>factoryFunction</key>
         <string>GainAUFactory</string>
         <key>manufacturer</key>

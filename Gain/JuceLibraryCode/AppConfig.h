@@ -226,10 +226,10 @@
  #define JucePlugin_Build_AAX              0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "NewProject"
+ #define JucePlugin_Name                   "VibratoOoOo"
 #endif
 #ifndef  JucePlugin_Desc
- #define JucePlugin_Desc                   "NewProject"
+ #define JucePlugin_Desc                   "VibratoOoOo"
 #endif
 #ifndef  JucePlugin_Manufacturer
  #define JucePlugin_Manufacturer           "yourcompany"
@@ -292,7 +292,7 @@
  #define JucePlugin_AUManufacturerCode     JucePlugin_ManufacturerCode
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
- #define JucePlugin_CFBundleIdentifier     com.yourcompany.NewProject
+ #define JucePlugin_CFBundleIdentifier     com.yourcompany.VibratoOoOo
 #endif
 #ifndef  JucePlugin_RTASCategory
  #define JucePlugin_RTASCategory           ePlugInCategory_None
